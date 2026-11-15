@@ -5,7 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>수행평가 도우미 - 보고서 출처(참고문헌) 표기 자동 만들기</title>
   <meta name="description" content="책, 신문기사, 웹사이트, 논문 정보를 넣으면 보고서·수행평가용 출처(참고문헌) 문장을 자동으로 만들어 주는 무료 도구. 학교 보고서 양식과 APA 양식 지원.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="수행평가 도우미 - 보고서 출처(참고문헌) 표기 자동 만들기">
+  <meta property="og:description" content="책, 신문기사, 웹사이트, 논문 정보를 넣으면 보고서·수행평가용 출처(참고문헌) 문장을 자동으로 만들어 주는 무료 도구. 학교 보고서 양식과 APA 양식 지원.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📝</text></svg>">
   <link rel="stylesheet" href="style.css">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"수행평가 도우미 출처 표기 만들기",
+   "applicationCategory":"EducationalApplication","operatingSystem":"Any","inLanguage":"ko",
+   "offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},
+   "description":"책, 신문기사, 웹사이트, 논문, 영상 정보를 넣으면 보고서용 출처(참고문헌) 문장을 자동으로 만들어 주는 무료 도구"}
+  </script>
 </head>
 <body>
   <header class="site"><div class="inner">
@@ -13,6 +23,7 @@
     <nav>
       <a href="index.html" class="active">출처 표기</a>
       <a href="dday.html">수행평가 D-day</a>
+      <a href="guide-citation.html">가이드</a>
     </nav>
   </div></header>
 
@@ -59,11 +70,12 @@
       <h3>예시</h3>
       <p class="hint">홍길동, 『우리 역사 이야기』, 한빛출판, 2021, 45쪽.<br>
       김기자, 「청소년 독서량 감소」, 『한국일보』, 2024.3.5.</p>
+      <p>자료 종류별 예시와 본문 인용 방법은 <a href="guide-citation.html">출처 표기 방법 총정리</a>에서 더 자세히 볼 수 있어요.</p>
     </section>
   </main>
 
   <footer class="site"><div class="inner">
-    <a href="about.html">소개</a><a href="privacy.html">개인정보처리방침</a>
+    <a href="guide-citation.html">출처 표기 방법</a><a href="guide-report.html">보고서 쓰는 법</a><a href="about.html">소개</a><a href="privacy.html">개인정보처리방침</a>
     <div>© 2026 수행평가 도우미</div>
   </div></footer>
 
@@ -95,7 +107,13 @@ const TYPES = {
     ["volume", "권", "예: 32"],
     ["issue", "호", "예: 1"],
     ["year", "발행 연도", "예: 2023"],
-    ["pages", "쪽", "예: 15-40"] ] }
+    ["pages", "쪽", "예: 15-40"] ] },
+  video: { name: "유튜브·영상", fields: [
+    ["author", "채널(만든 사람)", "예: EBS 지식"],
+    ["title", "영상 제목", "예: 기후 위기의 진실"],
+    ["platform", "플랫폼", "예: 유튜브"],
+    ["date", "올린 날짜", "", "date"],
+    ["url", "영상 주소(URL)", "https://youtube.com/..."] ] }
 };
 const STYLES = { kr: "학교 보고서 양식", apa: "APA 양식" };
 
@@ -142,6 +160,9 @@ function build(t, st, v) {
       add(v.author); add(v.title && `「${v.title}」`); add(v.journal && `『${v.journal}』`);
       const vi = (v.volume || "") + (v.issue ? `(${v.issue})` : "");
       add(vi); add(v.year); add(v.pages && `${v.pages}쪽`);
+    } else if (t === "video") {
+      add(v.author); add(v.title && `「${v.title}」`); add(v.platform);
+      add(krDate(v.date).replace(/\.$/, "")); add(v.url);
     }
     return parts.length ? parts.join(", ") + "." : "";
   }
@@ -159,6 +180,10 @@ function build(t, st, v) {
     return [who && `${who}.`, "(n.d.).", v.title && `*${v.title}*.`, v.site && v.site !== who && `${v.site}.`,
       v.accessed && `${krDate(v.accessed).replace(/\.$/, "")}에 검색함,`, v.url]
       .filter(Boolean).join(" ").replace(/,$/, ".");
+  }
+  if (t === "video") {
+    return [who && `${who}.`, `(${apaDate(v.date)}).`, v.title && `*${v.title}* [동영상].`, v.platform && `${v.platform}.`, v.url]
+      .filter(Boolean).join(" ");
   }
   if (t === "paper") {
     let src = v.journal ? `*${v.journal}*` : "";
@@ -197,6 +222,7 @@ function drawFields() {
     inp.type = kind || "text";
     inp.placeholder = ph;
     if (key === "accessed") inp.value = today();
+    if (key === "platform") inp.value = "유튜브";
     inp.oninput = update;
     box.append(l, inp);
   }
