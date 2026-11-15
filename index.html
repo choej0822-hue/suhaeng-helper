@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>수행평가 도우미 - 보고서 출처(참고문헌) 표기 자동 만들기</title>
+  <meta name="description" content="책, 신문기사, 웹사이트, 논문 정보를 넣으면 보고서·수행평가용 출처(참고문헌) 문장을 자동으로 만들어 주는 무료 도구. 학교 보고서 양식과 APA 양식 지원.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site"><div class="inner">
+    <a class="logo" href="index.html">📝 수행평가 도우미</a>
+    <nav>
+      <a href="index.html" class="active">출처 표기</a>
+      <a href="dday.html">수행평가 D-day</a>
+    </nav>
+  </div></header>
+
+  <main>
+    <h1>출처(참고문헌) 표기 만들기</h1>
+    <p class="lead">자료 정보를 넣으면 보고서에 붙여 넣을 출처 문장이 바로 만들어져요. 모르는 칸은 비워 둬도 돼요.</p>
+
+    <section class="card">
+      <label>자료 종류</label>
+      <div class="tabs" id="typeTabs"></div>
+
+      <label>표기 양식</label>
+      <div class="tabs" id="styleTabs"></div>
+
+      <div id="fields"></div>
+
+      <label>미리보기</label>
+      <div class="result" id="preview"></div>
+      <button class="btn" id="addBtn">참고문헌 목록에 추가</button>
+      <button class="btn ghost" id="copyOne">이 문장만 복사</button>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-top:0;font-size:1.15rem">내 참고문헌 목록</h2>
+      <p class="hint">가나다(ABC) 순으로 자동 정렬돼요. 이 목록은 지금 쓰는 브라우저에만 저장돼요.</p>
+      <ol id="list"></ol>
+      <p class="empty" id="emptyMsg">아직 추가한 출처가 없어요.</p>
+      <button class="btn" id="copyAll">목록 전체 복사</button>
+      <button class="btn ghost" id="clearAll">목록 비우기</button>
+    </section>
+
+    <a class="card" href="dday.html" style="display:block;text-decoration:none;color:var(--text)">
+      <b>📅 수행평가 마감일도 같이 관리해 보세요</b><br>
+      <span class="hint">과목별 마감일을 넣으면 남은 날짜를 가까운 순서로 보여줘요. →</span>
+    </a>
+
+    <section class="card guide">
+      <h2>출처 표기, 왜 해야 하나요?</h2>
+      <p>보고서에 다른 사람의 글, 통계, 사진을 쓰면 어디서 가져왔는지 밝혀야 해요. 출처를 적으면 표절을 피할 수 있고, 내 주장이 믿을 만한 자료에 근거했다는 걸 보여줄 수 있어 점수에도 도움이 돼요.</p>
+      <h3>학교 보고서 양식과 APA 양식의 차이</h3>
+      <p><b>학교 보고서 양식</b>은 우리나라 교과서와 보고서에서 많이 쓰는 방식으로, 책 제목은 『 』, 글이나 기사 제목은 「 」로 묶어요. <b>APA 양식</b>은 과학·사회 탐구 보고서나 논문에서 많이 쓰는 국제 양식으로, 저자 뒤에 연도를 괄호로 적어요. 선생님이 정해준 양식이 있다면 그걸 따르세요.</p>
+      <h3>웹사이트 출처에는 검색일을 꼭 적기</h3>
+      <p>웹페이지는 내용이 바뀌거나 사라질 수 있어서, 언제 그 내용을 봤는지(검색일)를 함께 적는 게 좋아요. 이 도구는 검색일을 오늘 날짜로 자동으로 채워 줘요.</p>
+      <h3>예시</h3>
+      <p class="hint">홍길동, 『우리 역사 이야기』, 한빛출판, 2021, 45쪽.<br>
+      김기자, 「청소년 독서량 감소」, 『한국일보』, 2024.3.5.</p>
+    </section>
+  </main>
+
+  <footer class="site"><div class="inner">
+    <a href="about.html">소개</a><a href="privacy.html">개인정보처리방침</a>
+    <div>© 2026 수행평가 도우미</div>
+  </div></footer>
+
+<script>
+// ===== 1. 자료 종류별로 어떤 입력칸이 필요한지 정의 =====
+const TYPES = {
+  book:  { name: "책", fields: [
+    ["author", "저자", "예: 홍길동 (여러 명이면 쉼표로 구분)"],
+    ["title", "책 제목", "예: 우리 역사 이야기"],
+    ["publisher", "출판사", "예: 한빛출판"],
+    ["year", "출판 연도", "예: 2021"],
+    ["pages", "인용한 쪽", "예: 45 또는 45-47"] ] },
+  news:  { name: "신문·잡지 기사", fields: [
+    ["author", "기자 이름", "예: 김기자"],
+    ["title", "기사 제목", "예: 청소년 독서량 감소"],
+    ["source", "신문·잡지 이름", "예: 한국일보"],
+    ["date", "기사 날짜", "", "date"],
+    ["url", "기사 주소(URL)", "https://..."] ] },
+  web:   { name: "웹사이트", fields: [
+    ["author", "작성자(기관)", "예: 통계청 (모르면 비워두기)"],
+    ["title", "글 제목", "예: 2024 청소년 통계"],
+    ["site", "사이트 이름", "예: 통계청 누리집"],
+    ["url", "주소(URL)", "https://..."],
+    ["accessed", "검색일(본 날짜)", "", "date"] ] },
+  paper: { name: "논문", fields: [
+    ["author", "저자", "예: 이연구"],
+    ["title", "논문 제목", "예: 청소년의 스마트폰 사용과 수면"],
+    ["journal", "학술지 이름", "예: 한국청소년연구"],
+    ["volume", "권", "예: 32"],
+    ["issue", "호", "예: 1"],
+    ["year", "발행 연도", "예: 2023"],
+    ["pages", "쪽", "예: 15-40"] ] }
+};
+const STYLES = { kr: "학교 보고서 양식", apa: "APA 양식" };
+
+let type = "book", style = "kr";
+const $ = (id) => document.getElementById(id);
+
+// ===== 2. 날짜를 양식에 맞게 바꾸는 작은 함수들 =====
+function today() { // 오늘 날짜를 "2026-11-15" 형태로
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function krDate(s) { // "2024-03-05" -> "2024.3.5."
+  if (!s) return "";
+  const [y, m, d] = s.split("-").map(Number);
+  return `${y}.${m}.${d}.`;
+}
+function apaDate(s) { // "2024-03-05" -> "2024, 3월 5일"
+  if (!s) return "n.d.";
+  const [y, m, d] = s.split("-").map(Number);
+  return `${y}, ${m}월 ${d}일`;
+}
+function esc(s) { // 입력값을 화면에 안전하게 표시
+  return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+// ===== 3. 입력값으로 출처 문장 만들기 (핵심 부분) =====
+// 기울임체가 필요한 곳은 *별표*로 감싸고, 화면에 보여줄 때만 <i>로 바꿔요.
+function build(t, st, v) {
+  const parts = [];
+  const add = (x) => { if (x) parts.push(x); };
+  if (st === "kr") {
+    if (t === "book") {
+      add(v.author); add(v.title && `『${v.title}』`); add(v.publisher); add(v.year);
+      add(v.pages && `${v.pages}쪽`);
+    } else if (t === "news") {
+      add(v.author); add(v.title && `「${v.title}」`); add(v.source && `『${v.source}』`);
+      add(krDate(v.date).replace(/\.$/, "")); add(v.url);
+    } else if (t === "web") {
+      add(v.author); add(v.title && `「${v.title}」`); add(v.site); add(v.url);
+      const main = parts.join(", ");
+      if (!main) return "";
+      return main + (v.accessed ? ` (검색일: ${krDate(v.accessed).replace(/\.$/, "")})` : "") + ".";
+    } else if (t === "paper") {
+      add(v.author); add(v.title && `「${v.title}」`); add(v.journal && `『${v.journal}』`);
+      const vi = (v.volume || "") + (v.issue ? `(${v.issue})` : "");
+      add(vi); add(v.year); add(v.pages && `${v.pages}쪽`);
+    }
+    return parts.length ? parts.join(", ") + "." : "";
+  }
+  // APA 양식
+  const who = v.author || "";
+  if (t === "book") {
+    return [who && `${who}.`, `(${v.year || "n.d."}).`, v.title && `*${v.title}*.`, v.publisher && `${v.publisher}.`]
+      .filter(Boolean).join(" ");
+  }
+  if (t === "news") {
+    return [who && `${who}.`, `(${apaDate(v.date)}).`, v.title && `${v.title}.`, v.source && `*${v.source}*.`, v.url]
+      .filter(Boolean).join(" ");
+  }
+  if (t === "web") {
+    return [who && `${who}.`, "(n.d.).", v.title && `*${v.title}*.`, v.site && v.site !== who && `${v.site}.`,
+      v.accessed && `${krDate(v.accessed).replace(/\.$/, "")}에 검색함,`, v.url]
+      .filter(Boolean).join(" ").replace(/,$/, ".");
+  }
+  if (t === "paper") {
+    let src = v.journal ? `*${v.journal}*` : "";
+    if (v.volume) src += `, *${v.volume}*`;
+    if (v.issue) src += `(${v.issue})`;
+    if (v.pages) src += `, ${v.pages}`;
+    return [who && `${who}.`, `(${v.year || "n.d."}).`, v.title && `${v.title}.`, src && `${src}.`]
+      .filter(Boolean).join(" ");
+  }
+}
+
+// 화면용(기울임체 적용)과 복사용(별표 제거) 두 가지로 바꾸기
+const toHtml = (s) => esc(s).replace(/\*(.+?)\*/g, "<i>$1</i>");
+const toText = (s) => s.replace(/\*(.+?)\*/g, "$1");
+
+// ===== 4. 화면 그리기 =====
+function drawTabs(boxId, items, current, onPick) {
+  const box = $(boxId);
+  box.innerHTML = "";
+  for (const [key, label] of items) {
+    const b = document.createElement("button");
+    b.textContent = label;
+    b.className = key === current ? "on" : "";
+    b.onclick = () => onPick(key);
+    box.appendChild(b);
+  }
+}
+function drawFields() {
+  const box = $("fields");
+  box.innerHTML = "";
+  for (const [key, label, ph, kind] of TYPES[type].fields) {
+    const l = document.createElement("label");
+    l.textContent = label;
+    const inp = document.createElement("input");
+    inp.id = "f_" + key;
+    inp.type = kind || "text";
+    inp.placeholder = ph;
+    if (key === "accessed") inp.value = today();
+    inp.oninput = update;
+    box.append(l, inp);
+  }
+}
+function values() {
+  const v = {};
+  for (const [key] of TYPES[type].fields) v[key] = $("f_" + key).value.trim();
+  return v;
+}
+function current() { return build(type, style, values()); }
+function update() {
+  const s = current();
+  $("preview").innerHTML = s ? toHtml(s) : '<span class="hint">위 칸을 채우면 여기에 출처 문장이 나타나요.</span>';
+}
+// 자료 종류를 바꾸면 입력칸을 새로 그리고, 양식만 바꾸면 입력한 내용은 그대로 두고 미리보기만 바꿔요.
+function pickType(k) { type = k; render(); }
+function pickStyle(k) {
+  style = k;
+  drawTabs("styleTabs", Object.entries(STYLES), style, pickStyle);
+  update();
+}
+function render() {
+  drawTabs("typeTabs", Object.entries(TYPES).map(([k, t]) => [k, t.name]), type, pickType);
+  drawTabs("styleTabs", Object.entries(STYLES), style, pickStyle);
+  drawFields();
+  update();
+}
+
+// ===== 5. 참고문헌 목록 (브라우저에 저장) =====
+const KEY = "citations-v1";
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } }
+function save(list) { try { localStorage.setItem(KEY, JSON.stringify(list)); } catch {} }
+function drawList() {
+  const list = load().sort((a, b) => toText(a).localeCompare(toText(b), "ko"));
+  const ol = $("list");
+  ol.innerHTML = "";
+  list.forEach((s) => {
+    const li = document.createElement("li");
+    li.innerHTML = toHtml(s) + " ";
+    const del = document.createElement("button");
+    del.className = "btn ghost small";
+    del.textContent = "삭제";
+    del.onclick = () => { save(load().filter((x) => x !== s)); drawList(); };
+    li.appendChild(del);
+    li.style.marginBottom = "8px";
+    ol.appendChild(li);
+  });
+  $("emptyMsg").style.display = list.length ? "none" : "block";
+}
+function copy(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const old = btn.textContent;
+    btn.textContent = "복사했어요!";
+    setTimeout(() => (btn.textContent = old), 1200);
+  });
+}
+
+$("addBtn").onclick = () => {
+  const s = current();
+  if (!s) return;
+  const list = load();
+  if (!list.includes(s)) list.push(s);
+  save(list);
+  drawList();
+};
+$("copyOne").onclick = (e) => { const s = current(); if (s) copy(toText(s), e.target); };
+$("copyAll").onclick = (e) => {
+  const list = load().map(toText).sort((a, b) => a.localeCompare(b, "ko"));
+  if (list.length) copy(list.join("\n"), e.target);
+};
+$("clearAll").onclick = () => { save([]); drawList(); };
+
+render();
+drawList();
+</script>
+</body>
+</html>

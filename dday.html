@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>수행평가 D-day 정리 - 과목별 마감일 한눈에 | 수행평가 도우미</title>
+  <meta name="description" content="과목별 수행평가 마감일을 입력하면 남은 날짜(D-day)를 가까운 순서로 정리해 주는 무료 도구. 회원가입 없이 바로 사용.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site"><div class="inner">
+    <a class="logo" href="index.html">📝 수행평가 도우미</a>
+    <nav>
+      <a href="index.html">출처 표기</a>
+      <a href="dday.html" class="active">수행평가 D-day</a>
+    </nav>
+  </div></header>
+
+  <main>
+    <h1>수행평가 D-day 정리</h1>
+    <p class="lead">과목과 마감일을 넣으면 남은 날짜를 가까운 순서대로 보여줘요.</p>
+
+    <section class="card">
+      <div class="row">
+        <div>
+          <label for="subject">과목</label>
+          <input id="subject" list="subjects" placeholder="예: 국어">
+          <datalist id="subjects">
+            <option>국어</option><option>수학</option><option>영어</option><option>사회</option>
+            <option>과학</option><option>역사</option><option>도덕</option><option>기술·가정</option>
+            <option>음악</option><option>미술</option><option>체육</option><option>정보</option>
+          </datalist>
+        </div>
+        <div>
+          <label for="due">마감일</label>
+          <input id="due" type="date">
+        </div>
+      </div>
+      <label for="task">내용</label>
+      <input id="task" placeholder="예: 독서 감상문 1,500자 제출">
+      <button class="btn" id="addBtn">추가하기</button>
+      <p class="hint" id="msg"></p>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-top:0;font-size:1.15rem">내 수행평가</h2>
+      <ul class="dday" id="list"></ul>
+      <p class="empty" id="emptyMsg">아직 추가한 수행평가가 없어요.</p>
+      <button class="btn ghost" id="clearPast">지난 일정 지우기</button>
+      <p class="hint">이 목록은 지금 쓰는 브라우저에만 저장돼요. 다른 기기에서는 보이지 않아요.</p>
+    </section>
+
+    <section class="card guide">
+      <h2>수행평가 일정, 이렇게 관리해 보세요</h2>
+      <h3>마감 3일 전을 진짜 마감으로</h3>
+      <p>D-3이 되면 주황색으로, 당일이 되면 빨간색으로 표시돼요. 주황색이 되기 전에 초안을 끝내 두면 마지막에 고칠 시간이 생겨요.</p>
+      <h3>큰 과제는 잘게 나누기</h3>
+      <p>보고서 하나도 "자료 찾기", "초안 쓰기", "출처 정리하기"처럼 나눠서 각각 날짜를 정해 두면 훨씬 덜 막막해요. 출처 정리는 <a href="index.html">출처 표기 도구</a>를 쓰면 금방 끝나요.</p>
+    </section>
+  </main>
+
+  <footer class="site"><div class="inner">
+    <a href="about.html">소개</a><a href="privacy.html">개인정보처리방침</a>
+    <div>© 2026 수행평가 도우미</div>
+  </div></footer>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const KEY = "dday-v1";
+
+// 브라우저 저장소에서 읽고 쓰기 (저장이 막힌 환경에서도 오류 없이 동작하도록 try 사용)
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } }
+function save(list) { try { localStorage.setItem(KEY, JSON.stringify(list)); } catch {} }
+
+// 오늘부터 마감일까지 며칠 남았는지 계산 (시간은 무시하고 날짜만 비교)
+function daysLeft(dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const due = new Date(y, m - 1, d);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((due - today) / 86400000);
+}
+function label(n) {
+  if (n === 0) return ["D-DAY", "today"];
+  if (n < 0) return ["D+" + -n, "past"];
+  return ["D-" + n, n <= 3 ? "soon" : ""];
+}
+function prettyDate(s) {
+  const [y, m, d] = s.split("-").map(Number);
+  const w = "일월화수목금토"[new Date(y, m - 1, d).getDay()];
+  return `${m}월 ${d}일 (${w})`;
+}
+
+function draw() {
+  const list = load().sort((a, b) => a.due.localeCompare(b.due));
+  const ul = $("list");
+  ul.innerHTML = "";
+  for (const item of list) {
+    const [text, cls] = label(daysLeft(item.due));
+    const li = document.createElement("li");
+    const badge = document.createElement("span");
+    badge.className = "badge " + cls;
+    badge.textContent = text;
+    const info = document.createElement("div");
+    info.className = "info";
+    const b = document.createElement("b");
+    b.textContent = item.subject + (item.task ? " · " + item.task : "");
+    const sp = document.createElement("span");
+    sp.textContent = prettyDate(item.due);
+    info.append(b, sp);
+    const del = document.createElement("button");
+    del.className = "btn ghost small";
+    del.textContent = "완료";
+    del.onclick = () => { save(load().filter((x) => x.id !== item.id)); draw(); };
+    li.append(badge, info, del);
+    ul.appendChild(li);
+  }
+  $("emptyMsg").style.display = list.length ? "none" : "block";
+}
+
+$("addBtn").onclick = () => {
+  const subject = $("subject").value.trim();
+  const due = $("due").value;
+  const task = $("task").value.trim();
+  if (!subject || !due) { $("msg").textContent = "과목과 마감일은 꼭 넣어 주세요."; return; }
+  const list = load();
+  list.push({ id: Date.now(), subject, due, task });
+  save(list);
+  $("msg").textContent = "";
+  $("subject").value = ""; $("task").value = "";
+  draw();
+};
+$("clearPast").onclick = () => { save(load().filter((x) => daysLeft(x.due) >= 0)); draw(); };
+
+draw();
+</script>
+</body>
+</html>

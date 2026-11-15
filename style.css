@@ -1,0 +1,109 @@
+/* 공통 스타일: 모든 페이지가 이 파일 하나를 같이 씁니다. */
+:root {
+  --bg: #f7f8fb;
+  --card: #ffffff;
+  --text: #1d2433;
+  --muted: #5f6b7d;
+  --line: #e2e6ee;
+  --accent: #3b5bdb;
+  --accent-soft: #edf1ff;
+  --danger: #e03131;
+  --warn: #f08c00;
+  --ok: #2f9e44;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171f;
+    --card: #1d212b;
+    --text: #e8ebf2;
+    --muted: #9aa4b5;
+    --line: #2d3340;
+    --accent: #7c96ff;
+    --accent-soft: #252c44;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  line-height: 1.6;
+}
+a { color: var(--accent); }
+header.site {
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+header.site .inner, main, footer.site .inner {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+header.site .inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; padding-top: 12px; padding-bottom: 12px;
+}
+.logo { font-weight: 800; font-size: 1.15rem; text-decoration: none; color: var(--text); }
+nav a { margin-left: 14px; text-decoration: none; color: var(--muted); font-size: .95rem; }
+nav a:first-child { margin-left: 0; }
+nav a.active, nav a:hover { color: var(--accent); }
+main { padding-top: 24px; padding-bottom: 40px; }
+h1 { font-size: 1.6rem; margin: 0 0 6px; }
+.lead { color: var(--muted); margin: 0 0 20px; }
+.card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 20px; margin-bottom: 18px;
+}
+.tool-list { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.tool-list a.card { text-decoration: none; color: var(--text); display: block; margin: 0; }
+.tool-list a.card:hover { border-color: var(--accent); }
+.tool-list h2 { font-size: 1.1rem; margin: 0 0 4px; }
+.tool-list p { margin: 0; color: var(--muted); font-size: .95rem; }
+label { display: block; font-weight: 600; font-size: .92rem; margin: 12px 0 4px; }
+input, select {
+  width: 100%; padding: 10px 12px; font-size: 1rem;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--bg); color: var(--text);
+}
+.row { display: grid; gap: 0 12px; grid-template-columns: 1fr 1fr; }
+@media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+.tabs button {
+  border: 1px solid var(--line); background: var(--bg); color: var(--text);
+  padding: 8px 14px; border-radius: 999px; cursor: pointer; font-size: .95rem;
+}
+.tabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn {
+  display: inline-block; border: 0; background: var(--accent); color: #fff;
+  padding: 10px 18px; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-top: 14px;
+}
+.btn.ghost { background: var(--accent-soft); color: var(--accent); }
+.btn.small { padding: 6px 10px; font-size: .85rem; margin-top: 0; }
+.result {
+  background: var(--accent-soft); border-radius: 8px; padding: 14px;
+  margin-top: 14px; word-break: break-all; min-height: 1.6em;
+}
+.hint { color: var(--muted); font-size: .88rem; }
+.guide h2 { font-size: 1.15rem; margin-top: 0; }
+.guide h3 { font-size: 1rem; margin-bottom: 4px; }
+ul.dday { list-style: none; padding: 0; margin: 0; }
+ul.dday li {
+  display: flex; align-items: center; gap: 12px; padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+ul.dday li:last-child { border-bottom: 0; }
+.badge {
+  min-width: 64px; text-align: center; font-weight: 800; border-radius: 8px;
+  padding: 4px 8px; background: var(--accent-soft); color: var(--accent);
+}
+.badge.soon { background: #fff4e6; color: var(--warn); }
+.badge.today { background: #ffe3e3; color: var(--danger); }
+.badge.past { background: var(--line); color: var(--muted); }
+.dday .info { flex: 1; min-width: 0; }
+.dday .info b { display: block; }
+.dday .info span { color: var(--muted); font-size: .88rem; }
+.empty { color: var(--muted); text-align: center; padding: 20px 0; }
+footer.site { border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; }
+footer.site .inner { padding-top: 16px; padding-bottom: 24px; }
+footer.site a { color: var(--muted); margin-right: 12px; }
