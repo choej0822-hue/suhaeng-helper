@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://choej0822-hue.github.io/suhaeng-helper/sitemap.xml
